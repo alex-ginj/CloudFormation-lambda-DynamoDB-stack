@@ -1,0 +1,199 @@
+{
+    "Resources": {
+        "Candidate": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "Name",
+                        "AttributeType": "S"
+                    },
+                    {
+                        "AttributeName": "Profession",
+                        "AttributeType": "S"
+                    },
+                    {
+                        "AttributeName": "Nationality",
+                        "AttributeType": "S"
+                    },
+                    {
+                        "AttributeName": "Age",
+                        "AttributeType": "N"
+                    },
+
+                    {
+                        "AttributeName": "DesSalary",
+                        "AttributeType": "N"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "Name",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "Profession",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "GlobalSecondaryIndexes": [
+                    {
+                        "IndexName": "Salary",
+                        "KeySchema": [
+                            {
+                                "AttributeName": "DesSalary",
+                                "KeyType": "HASH"
+                            }
+                        ],
+                        "Projection": {
+                            "ProjectionType": "KEYS_ONLY"
+                        },
+                        "ProvisionedThroughput": {
+                            "ReadCapacityUnits": "5",
+                            "WriteCapacityUnits": "5"
+                        }
+                    }
+                ],
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": "5",
+                    "WriteCapacityUnits": "5"
+                },
+                "StreamSpecification": "NEW_IMAGE"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "ac1621ce-bb63-457f-8309-8b563773581f"
+                }
+            }
+        },
+        "LambdaFunction":{
+            "Type" : "AWS::Lambda::Function",
+            "Properties" : {
+                "Code" : {"ZipFile":"
+                    from __future__ import print_function\n
+
+                    def lambda_handler(event, context):\n
+                     \t  for record in event['Records']:\n
+                     \t\t   print(record['eventID'])\n
+                     \t\t   print(record['eventName'])\n       
+                     \t  print('Successfully processed %s records.' % str(len(event['Records'])))
+                         "},
+                
+                "Description" : "A Lambda function that handles DynamoDB records.",
+                "Environment" : {"Records":[
+                                      {
+                                         "eventID":"1",
+                                         "eventName":"INSERT",
+                                         "eventVersion":"1.0",
+                                         "eventSource":"aws:dynamodb",
+                                         "awsRegion":"us-east-1",
+                                         "dynamodb":{
+                                            "Keys":{
+                                               "Id":{
+                                                  "N":"101"
+                                               }
+                                            },
+                                            "NewImage":{
+                                               "Message":{
+                                                  "S":"New item!"
+                                               },
+                                               "Id":{
+                                                  "N":"101"
+                                               }
+                                            },
+                                            "SequenceNumber":"111",
+                                            "SizeBytes":26,
+                                            "StreamViewType":"NEW_AND_OLD_IMAGES"
+                                         },
+                                         "eventSourceARN":"stream-ARN"
+                                      },
+                                      {
+                                         "eventID":"2",
+                                         "eventName":"MODIFY",
+                                         "eventVersion":"1.0",
+                                         "eventSource":"aws:dynamodb",
+                                         "awsRegion":"us-east-1",
+                                         "dynamodb":{
+                                            "Keys":{
+                                               "Id":{
+                                                  "N":"101"
+                                               }
+                                            },
+                                            "NewImage":{
+                                               "Message":{
+                                                  "S":"This item has changed"
+                                               },
+                                               "Id":{
+                                                  "N":"101"
+                                               }
+                                            },
+                                            "OldImage":{
+                                               "Message":{
+                                                  "S":"New item!"
+                                               },
+                                               "Id":{
+                                                  "N":"101"
+                                               }
+                                            },
+                                            "SequenceNumber":"222",
+                                            "SizeBytes":59,
+                                            "StreamViewType":"NEW_AND_OLD_IMAGES"
+                                         },
+                                         "eventSourceARN":"stream-ARN"
+                                      },
+                                      {
+                                         "eventID":"3",
+                                         "eventName":"REMOVE",
+                                         "eventVersion":"1.0",
+                                         "eventSource":"aws:dynamodb",
+                                         "awsRegion":"us-east-1",
+                                         "dynamodb":{
+                                            "Keys":{
+                                               "Id":{
+                                                  "N":"101"
+                                               }
+                                            },
+                                            "OldImage":{
+                                               "Message":{
+                                                  "S":"This item has changed"
+                                               },
+                                               "Id":{
+                                                  "N":"101"
+                                               }
+                                            },
+                                            "SequenceNumber":"333",
+                                            "SizeBytes":38,
+                                            "StreamViewType":"NEW_AND_OLD_IMAGES"
+                                         },
+                                         "eventSourceARN":"stream-ARN"
+                                      }]
+                                },
+                "FunctionName" : "dynamodbhandler",
+                "Handler" : "index.lambda_handler",
+                
+                
+                "ReservedConcurrentExecutions" : 5,
+                "Role" : "arn:aws:iam::091353213883:role/DynamoDB_Lambda",
+                "Runtime" : "python3.6"
+
+                
+         }
+        }
+    },
+    "Metadata": {
+        "AWS::CloudFormation::Designer": {
+            "ac1621ce-bb63-457f-8309-8b563773581f": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 120,
+                    "y": -60
+                },
+                "z": 1,
+                "embeds": []
+            }
+        }
+    }
+}
